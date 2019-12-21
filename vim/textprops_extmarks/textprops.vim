@@ -12,15 +12,16 @@ endif
 
 function! s:filer(path) abort
     let s:bufnr = bufnr('%')
-    let s:files = glob(a:path . '/*', v:false, v:true)
-    %delete _
-    call setline(1, ['..'] + map(copy(s:files), {_, v -> fnamemodify(v, ':t:r')}))
+    let path = fnamemodify(a:path, ':p:gs?\?\/?:s?[^:]\zs\/$??')
+    let s:files = glob(path . '/*', v:false, v:true)
+    silent %delete _
+    call setline(1, ['..'] + map(copy(s:files), {_, v -> fnamemodify(v, ':t')}))
     setlocal nomodified buftype=nofile bufhidden=wipe
 
     let s:props = {} " idをkeyにしたdictにpropertyをもたせて管理する
 
     let line = 1
-    let paths = [fnamemodify(a:path, ':p:s?\/$??:h:s?^\.$?\/?')] + map(copy(s:files), {_, v -> fnamemodify(v, ':p')})
+    let paths = [fnamemodify(path, ':h:s?^\.$?\/?')] + map(copy(s:files), {_, v -> fnamemodify(v, ':p:gs?\?\/?')})
     for path in paths
         let id = line " 特に支障がないので行数をid代わりにする
         let is_dir = isdirectory(path)
